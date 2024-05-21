@@ -23,5 +23,5 @@ test_data = RecSysDataset(test_data)
 test_loader = DataLoader(test_data, batch_size = args['batch_size'], shuffle = False, collate_fn = collate_fn)
 
 hit, mrr = validate(test_loader, model)
-print('recall@20: ', hit)
-print('mrr@20: ', mrr)
+print('recall@20: ', hit*100)
+print('mrr@20: ', mrr*100)
