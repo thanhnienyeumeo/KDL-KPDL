@@ -65,7 +65,7 @@ def main():
             best_result[0] = hit
             best_epoch[0] = epoch
             flag = 1
-            torch.save("best_recall.pt", model)
+            torch.save(model,"best_recall.pt")
         if mrr >= best_result[1]:
             best_result[1] = mrr
             best_epoch[1] = epoch
