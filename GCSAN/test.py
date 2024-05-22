@@ -41,7 +41,7 @@ parser.add_argument('--validation', action='store_true', help='validation')
 parser.add_argument('--valid_portion', type=float, default=0.1, help='split the portion of training set as validation set')
 parser.add_argument('--dynamic', type=bool, default=False)
 opt = parser.parse_args()
-print(opt)
+
 
 
 

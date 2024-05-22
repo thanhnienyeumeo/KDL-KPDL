@@ -14,9 +14,9 @@ from model import *
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--dataset', default='sample', help='dataset name: diginetica/yoochoose1_4/yoochoose1_64/sample')
-parser.add_argument('--batchSize', type=int, default=100, help='input batch size')
-parser.add_argument('--hiddenSize', type=int, default=100, help='hidden state size')
-parser.add_argument('--epoch', type=int, default=30, help='the number of epochs to train for')
+parser.add_argument('--batchSize', type=int, default=75, help='input batch size')
+parser.add_argument('--hiddenSize', type=int, default=120, help='hidden state size')
+parser.add_argument('--epoch', type=int, default=15, help='the number of epochs to train for')
 parser.add_argument('--lr', type=float, default=0.001, help='learning rate')  # [0.001, 0.0005, 0.0001]
 parser.add_argument('--lr_dc', type=float, default=0.1, help='learning rate decay rate')
 parser.add_argument('--lr_dc_step', type=int, default=3, help='the number of steps after which the learning rate decay')
@@ -31,12 +31,13 @@ print(opt)
 
 
 def main():
-    train_data = pickle.load(open('../datasets/' + opt.dataset + '/train.pkl', 'rb'))
+    train_data = pickle.load(open('datasets' + '/train.pkl', 'rb'))
     if opt.validation:
+        print(1)
         train_data, valid_data = split_validation(train_data, opt.valid_portion)
         test_data = valid_data
     else:
-        test_data = pickle.load(open('../datasets/' + opt.dataset + '/test.pkl', 'rb'))
+        test_data = pickle.load(open('datasets' + '/test.pkl', 'rb'))
     # all_train_seq = pickle.load(open('../datasets/' + opt.dataset + '/all_train_seq.txt', 'rb'))
     # g = build_graph(all_train_seq)
     train_data = Data(train_data, shuffle=True)
@@ -48,7 +49,7 @@ def main():
         n_node = 37484
     else:
         n_node = 22052
-
+    n_node = 22055
     model = trans_to_cuda(SessionGraph(opt, n_node))
 
     start = time.time()
