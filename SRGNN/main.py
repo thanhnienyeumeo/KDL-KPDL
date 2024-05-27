@@ -67,12 +67,12 @@ def main():
             best_result[0] = hit
             best_epoch[0] = epoch
             bad_counter = 1
-            torch.save(model,opt.saved_data  + "best_recall.pt")
+            torch.save(model,opt.saved_data  + "/best_recall.pt")
         if mrr >= best_result[1]:
             best_result[1] = mrr
             best_epoch[1] = epoch
             bad_counter = 1
-            torch.save(model, opt.saved_data + "best_mrr.pt")
+            torch.save(model, opt.saved_data + "/best_mrr.pt")
         print('Best Result:')
         print('\tRecall@20:\t%.4f\tMMR@20:\t%.4f\tEpoch:\t%d,\t%d'% (best_result[0], best_result[1], best_epoch[0], best_epoch[1]))
         
@@ -84,7 +84,7 @@ def main():
             'best_result': best_result,
             'best_epoch': best_epoch
         }
-        torch.save(ckpt_dict,  opt.saved_data + f'best_mrr.pth.tar')
+        torch.save(ckpt_dict,  opt.saved_data + f'/best_mrr.pth.tar')
         
         
         if bad_counter >= opt.patience:
