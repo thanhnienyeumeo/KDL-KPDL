@@ -37,6 +37,7 @@ class yoochoose_data_64():
     validation = True
     valid_portion = 0.1
     saved_data = 'TAGNN++'
+    mini = True
 
 
 # Default args used for Yoochoose1_64
@@ -64,7 +65,8 @@ def main(opt):
    
     train_data = _load_file('datasets/train.pkl')
     
-
+    if opt.mini:
+        train_data = [train_data[0][:200], train_data[1][:200]] # for testing the code
     if opt.validation:
         train_data, valid_data = split_validation(
             train_data, opt.valid_portion)
@@ -121,7 +123,7 @@ def main(opt):
             'best_result': best_result,
             'best_epoch': best_epoch
         }
-        torch.save(ckpt_dict,  opt.saved_data + f'/best_mrr.pth.tar')
+        torch.save(ckpt_dict,  opt.saved_data + f'/last_model.pth.tar')
 
         if bad_counter >= opt.patience:
             break
@@ -133,7 +135,7 @@ def main(opt):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--dataset', default='yoochoose1_64',
+    parser.add_argument('--dataset', default='yoochoose_data_64',
                         help='Dataset name: yoochoose_data_64 | yoochoose1_64')
     parser.add_argument('--defaults', type=str2bool,
                         default=True, help='Use default configuration')
@@ -157,6 +159,7 @@ if __name__ == '__main__':
     parser.add_argument('--valid_portion', type=float, default=0.1,
                         help='Portion of train set to split into val set')
     parser.add_argument('--saved_data', type = str, default = 'TAGNN++')
+    parser.add_argument('--mini', action = 'store_true', help = 'use the mini dataset')
     opt = parser.parse_args()
 
     if opt.defaults:
