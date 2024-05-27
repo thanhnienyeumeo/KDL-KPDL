@@ -20,11 +20,13 @@ def _load_file(filename):
 
 # Default args used for yoochoose-data-64
 
+
+
 class yoochoose_data_64():
     dataset = 'yoochoose_data_64'
     batchSize = 75
     hiddenSize = 120
-    epoch = 2
+    epoch = 15
     lr = 0.001
     lr_dc = 0.1
     lr_dc_step = 3
@@ -34,6 +36,7 @@ class yoochoose_data_64():
     nonhybrid = False
     validation = True
     valid_portion = 0.1
+    saved_data = 'TAGNN++'
 
 
 # Default args used for Yoochoose1_64
@@ -58,21 +61,16 @@ def main(opt):
     model_save_dir = 'saved/'
     writer = SummaryWriter(log_dir='with_pos/logs')
 
-    if opt.dataset == 'yoochoose_data_64':
-        train_data = _load_file('datasets/yoochoose_data_64/train.pkl')
-        test_data = _load_file('datasets/yoochoose_data_64/test.pkl')
-
-    elif opt.dataset == 'yoochoose1_64':
-        train_data = pickle.load(
-            open('datasets/yoochoose1_64/raw' + '/train.txt', 'rb'))
-        test_data = pickle.load(
-            open('datasets/yoochoose1_64/raw' + '/test.txt', 'rb'))
+   
+    train_data = _load_file('datasets/train.pkl')
+    
 
     if opt.validation:
         train_data, valid_data = split_validation(
             train_data, opt.valid_portion)
         test_data = valid_data
     else:
+        test_data = _load_file('datasets/test.pkl')
         print('Testing dataset used validation set')
 
     train_data = Dataset(train_data, shuffle=True)
@@ -103,13 +101,13 @@ def main(opt):
             best_result[0] = hit
             best_epoch[0] = epoch
             bad_counter = 1
-            torch.save(model,opt.saved_data  + "best_recall.pt")
+            torch.save(model,opt.saved_data  + "/best_recall.pt")
             
         if mrr >= best_result[1]:
             best_result[1] = mrr
             best_epoch[1] = epoch
             bad_counter = 1
-            torch.save(model, opt.saved_data + "best_mrr.pt")
+            torch.save(model, opt.saved_data + "/best_mrr.pt")
 
         print('Best Result:')
         print('\tRecall@20:\t%.4f\tMRR@20:\t%.4f\tEpoch:\t%d,\t%d' %
@@ -123,7 +121,7 @@ def main(opt):
             'best_result': best_result,
             'best_epoch': best_epoch
         }
-        torch.save(ckpt_dict,  opt.saved_data + f'best_mrr.pth.tar')
+        torch.save(ckpt_dict,  opt.saved_data + f'/best_mrr.pth.tar')
 
         if bad_counter >= opt.patience:
             break
@@ -140,10 +138,10 @@ if __name__ == '__main__':
     parser.add_argument('--defaults', type=str2bool,
                         default=True, help='Use default configuration')
     parser.add_argument('--batchSize', type=int,
-                        default=50, help='Batch size')
+                        default=75, help='Batch size')
     parser.add_argument('--hiddenSize', type=int,
-                        default=100, help='Hidden state dimensions')
-    parser.add_argument('--epoch', type=int, default=30,
+                        default=120, help='Hidden state dimensions')
+    parser.add_argument('--epoch', type=int, default=15,
                         help='The number of epochs to train for')
     parser.add_argument('--lr', type=float, default=1e-3,
                         help='Set the Learning Rate')
@@ -158,6 +156,7 @@ if __name__ == '__main__':
     parser.add_argument('--validation', action='store_true', help='validation')
     parser.add_argument('--valid_portion', type=float, default=0.1,
                         help='Portion of train set to split into val set')
+    parser.add_argument('--saved_data', type = str, default = 'TAGNN++')
     opt = parser.parse_args()
 
     if opt.defaults:
