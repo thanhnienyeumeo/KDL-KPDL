@@ -41,7 +41,7 @@ def split_validation(train_set, valid_portion):
     train_set_x, train_set_y = train_set
     n_samples = len(train_set_x)
     sidx = np.arange(n_samples, dtype='int32')
-    # np.random.shuffle(sidx)
+    np.random.shuffle(sidx)
     n_train = int(np.round(n_samples * (1. - valid_portion)))
     valid_set_x = [train_set_x[s] for s in sidx[n_train:]]
     valid_set_y = [train_set_y[s] for s in sidx[n_train:]]
