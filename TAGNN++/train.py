@@ -31,7 +31,7 @@ class yoochoose_data_64():
     l2 = 1e-5
     step = 1
     patience = 10
-    nonhybrid = True
+    nonhybrid = False
     validation = True
     valid_portion = 0.1
 
@@ -71,7 +71,7 @@ def main(opt):
     if opt.validation:
         train_data, valid_data = split_validation(
             train_data, opt.valid_portion)
-        # test_data = valid_data
+        test_data = valid_data
     else:
         print('Testing dataset used validation set')
 
@@ -94,35 +94,36 @@ def main(opt):
         print('Epoch: ', epoch)
         hit, mrr = train_test(model, train_data, test_data)
         
+        bad_counter += 1 
+
+        writer.add_scalar('epoch/recall', hit, epoch)
+        writer.add_scalar('epoch/mrr', mrr, epoch)
 
         if hit >= best_result[0]:
             best_result[0] = hit
             best_epoch[0] = epoch
-            flag = 1
-            ckpt_dict = {
-            'epoch': epoch + 1,
-            'state_dict': model.state_dict(),
-            'optimizer': model.optimizer.state_dict(),
-            'scheduler': model.scheduler.state_dict()
-        }
-            torch.save(ckpt_dict, f'best_recall.pth.tar')
+            bad_counter = 1
+            torch.save(model,opt.saved_data  + "best_recall.pt")
+            
         if mrr >= best_result[1]:
             best_result[1] = mrr
             best_epoch[1] = epoch
-            flag = 1
-            ckpt_dict = {
-            'epoch': epoch + 1,
-            'state_dict': model.state_dict(),
-            'optimizer': model.optimizer.state_dict(),
-            'scheduler': model.scheduler.state_dict()
-        }
-            torch.save(ckpt_dict, f'best_mrr.pth.tar')
+            bad_counter = 1
+            torch.save(model, opt.saved_data + "best_mrr.pt")
 
         print('Best Result:')
         print('\tRecall@20:\t%.4f\tMRR@20:\t%.4f\tEpoch:\t%d,\t%d' %
               (best_result[0], best_result[1], best_epoch[0], best_epoch[1]))
 
-        bad_counter += 1 - flag
+        ckpt_dict = {
+            'epoch': epoch + 1,
+            'state_dict': model.state_dict(),
+            'optimizer': model.optimizer.state_dict(),
+            'scheduler': model.scheduler.state_dict(),
+            'best_result': best_result,
+            'best_epoch': best_epoch
+        }
+        torch.save(ckpt_dict,  opt.saved_data + f'best_mrr.pth.tar')
 
         if bad_counter >= opt.patience:
             break

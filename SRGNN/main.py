@@ -26,6 +26,7 @@ parser.add_argument('--patience', type=int, default=10, help='the number of epoc
 parser.add_argument('--nonhybrid', action='store_true', help='only use the global preference to predict')
 parser.add_argument('--validation', action='store_true', help='validation')
 parser.add_argument('--valid_portion', type=float, default=0.1, help='split the portion of training set as validation set')
+parser.add_argument('--saved_data', type = str, default = 'SRGNN')
 opt = parser.parse_args()
 print(opt)
 
@@ -48,7 +49,7 @@ def main():
     elif opt.dataset == 'yoochoose1_64' or opt.dataset == 'yoochoose1_4':
         n_node = 37484
     else:
-        n_node = 22052
+        n_node = 22055
     n_node = 22055
     model = trans_to_cuda(SessionGraph(opt, n_node))
 
@@ -56,6 +57,7 @@ def main():
     best_result = [0, 0]
     best_epoch = [0, 0]
     bad_counter = 0
+    bad_counter += 1
     for epoch in range(opt.epoch):
         print('-------------------------------------------------------')
         print('epoch: ', epoch)
@@ -64,15 +66,27 @@ def main():
         if hit >= best_result[0]:
             best_result[0] = hit
             best_epoch[0] = epoch
-            flag = 1
-            torch.save(model,"best_recall.pt")
+            bad_counter = 1
+            torch.save(model,opt.saved_data  + "best_recall.pt")
         if mrr >= best_result[1]:
             best_result[1] = mrr
             best_epoch[1] = epoch
-            flag = 1
+            bad_counter = 1
+            torch.save(model, opt.saved_data + "best_mrr.pt")
         print('Best Result:')
         print('\tRecall@20:\t%.4f\tMMR@20:\t%.4f\tEpoch:\t%d,\t%d'% (best_result[0], best_result[1], best_epoch[0], best_epoch[1]))
-        bad_counter += 1 - flag
+        
+        ckpt_dict = {
+            'epoch': epoch + 1,
+            'state_dict': model.state_dict(),
+            'optimizer': model.optimizer.state_dict(),
+            'scheduler': model.scheduler.state_dict(),
+            'best_result': best_result,
+            'best_epoch': best_epoch
+        }
+        torch.save(ckpt_dict,  opt.saved_data + f'best_mrr.pth.tar')
+        
+        
         if bad_counter >= opt.patience:
             break
     print('-------------------------------------------------------')
