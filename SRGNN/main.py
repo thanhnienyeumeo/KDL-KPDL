@@ -27,12 +27,15 @@ parser.add_argument('--nonhybrid', action='store_true', help='only use the globa
 parser.add_argument('--validation', action='store_true', help='validation')
 parser.add_argument('--valid_portion', type=float, default=0.1, help='split the portion of training set as validation set')
 parser.add_argument('--saved_data', type = str, default = 'SRGNN')
+parser.add_argument('--mini', action = 'store_true', help = 'use the mini dataset')
 opt = parser.parse_args()
 print(opt)
 
 
 def main():
     train_data = pickle.load(open('datasets' + '/train.pkl', 'rb'))
+    if opt.mini:
+        train_data = [train_data[0][:200], train_data[1][:200]] # for testing the code
     if opt.validation:
         print(1)
         train_data, valid_data = split_validation(train_data, opt.valid_portion)
@@ -57,10 +60,11 @@ def main():
     best_result = [0, 0]
     best_epoch = [0, 0]
     bad_counter = 0
-    bad_counter += 1
+    
     for epoch in range(opt.epoch):
         print('-------------------------------------------------------')
         print('epoch: ', epoch)
+        bad_counter += 1
         hit, mrr = train_test(model, train_data, test_data)
         flag = 0
         if hit >= best_result[0]:
@@ -84,7 +88,7 @@ def main():
             'best_result': best_result,
             'best_epoch': best_epoch
         }
-        torch.save(ckpt_dict,  opt.saved_data + f'/best_mrr.pth.tar')
+        torch.save(ckpt_dict,  opt.saved_data + f'/last_model.pth.tar')
         
         
         if bad_counter >= opt.patience:
