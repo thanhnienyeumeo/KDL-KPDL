@@ -55,7 +55,7 @@ n_node = 22055
 
 model = trans_to_cuda(SessionGraph(opt, n_node, test_data.len_max))
 
-model = torch.load('GCSAN/best_recall.pt')
+model = torch.load('GCSAN/best_mrr.pt')
 
 recall, mrr = validate(model, test_data)
 print('recall@20: ', recall)

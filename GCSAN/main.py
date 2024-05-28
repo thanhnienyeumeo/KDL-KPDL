@@ -29,7 +29,7 @@ parser.add_argument('--valid_portion', type=float, default=0.1, help='split the 
 parser.add_argument('--dynamic', type=bool, default=False)
 parser.add_argument('--saved_data', type = str, default = 'GCSAN')
 parser.add_argument('--mini', action = 'store_true', help = 'use the mini dataset to test the code')
-
+parser.add_argument('--model',action = 'store_true', help = 'use the model to test the code')
 
 opt = parser.parse_args()
 print(opt)
@@ -65,7 +65,17 @@ def main():
     best_result = [0, 0]
     best_epoch = [0, 0]
     bad_counter = 0
-    for epoch in range(opt.epoch):
+    start_epoch = 0
+    if opt.model:
+        ckpt = torch.load(opt.saved_data + '/last_model.pth.tar')
+        model.load_state_dict(ckpt['state_dict'])
+        model.optimizer.load_state_dict(ckpt['optimizer'])
+        model.scheduler.load_state_dict(ckpt['scheduler'])
+        best_result = ckpt['best_result']
+        best_epoch = ckpt['best_epoch']
+        start_epoch = ckpt['epoch']
+        print('Successfully loaded the model: ', opt.saved_data)
+    for epoch in range(start_epoch, opt.epoch):
         print('-------------------------------------------------------')
         print('epoch: ', epoch)
         hit, mrr = train_test(model, train_data, test_data)
