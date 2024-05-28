@@ -13,10 +13,10 @@ from utils import build_graph, Data, split_validation
 from model import *
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--dataset', default='diginetica', help='dataset name: diginetica/yoochoose1_4/yoochoose1_64/sample')
-parser.add_argument('--batchSize', type=int, default=50, help='input batch size')
+parser.add_argument('--dataset', default='yoochoose1_64', help='dataset name: diginetica/yoochoose1_4/yoochoose1_64/sample')
+parser.add_argument('--batchSize', type=int, default=75, help='input batch size')
 parser.add_argument('--hiddenSize', type=int, default=120, help='hidden state size')
-parser.add_argument('--epoch', type=int, default=30, help='the number of epochs to train for')
+parser.add_argument('--epoch', type=int, default=15, help='the number of epochs to train for')
 parser.add_argument('--lr', type=float, default=0.001, help='learning rate')  # [0.001, 0.0005, 0.0001]
 parser.add_argument('--lr_dc', type=float, default=0.1, help='learning rate decay rate')
 parser.add_argument('--lr_dc_step', type=int, default=3, help='the number of steps after which the learning rate decay')
@@ -27,17 +27,24 @@ parser.add_argument('--nonhybrid', action='store_true', help='only use the globa
 parser.add_argument('--validation', action='store_true', help='validation')
 parser.add_argument('--valid_portion', type=float, default=0.1, help='split the portion of training set as validation set')
 parser.add_argument('--dynamic', type=bool, default=False)
+parser.add_argument('--saved_data', type = str, default = 'GCSAN')
+parser.add_argument('--mini', action = 'store_true', help = 'use the mini dataset to test the code')
+
+
 opt = parser.parse_args()
 print(opt)
 
 
 def main():
-    train_data = pickle.load(open('../datasets/' + opt.dataset + '/train.txt', 'rb'))
+    
+    train_data = pickle.load(open('../datasets/' + opt.dataset + '/train.pkl', 'rb'))
+    if opt.mini:
+        train_data = [train_data[0][:200], train_data[1][:200]] # for testing the code
     if opt.validation:
         train_data, valid_data = split_validation(train_data, opt.valid_portion)
         test_data = valid_data
     else:
-        test_data = pickle.load(open('../datasets/' + opt.dataset + '/test.txt', 'rb'))
+        test_data = pickle.load(open('../datasets/' + opt.dataset + '/test.pkl', 'rb'))
     # all_train_seq = pickle.load(open('../datasets/' + opt.dataset + '/all_train_seq.txt', 'rb'))
     # g = build_graph(all_train_seq)
     train_data = Data(train_data, shuffle=True, opt=opt)
@@ -63,17 +70,30 @@ def main():
         print('epoch: ', epoch)
         hit, mrr = train_test(model, train_data, test_data)
         flag = 0
+        bad_counter += 1
+
         if hit >= best_result[0]:
             best_result[0] = hit
             best_epoch[0] = epoch
-            flag = 1
+            bad_counter = 1
+            torch.save(model, opt.saved_data  + "/best_recall.pt")
         if mrr >= best_result[1]:
             best_result[1] = mrr
             best_epoch[1] = epoch
-            flag = 1
+            bad_counter = 1
+            torch.save(model, opt.saved_data + "/best_mrr.pt")
         print('Best Result:')
         print('\tRecall@20:\t%.4f\tMMR@20:\t%.4f\tEpoch:\t%d,\t%d'% (best_result[0], best_result[1], best_epoch[0], best_epoch[1]))
-        bad_counter += 1 - flag
+
+        ckpt_dict = {
+            'epoch': epoch + 1,
+            'state_dict': model.state_dict(),
+            'optimizer': model.optimizer.state_dict(),
+            'scheduler': model.scheduler.state_dict(),
+            'best_result': best_result,
+            'best_epoch': best_epoch
+        }
+        torch.save(ckpt_dict,  opt.saved_data + f'/last_model.pth.tar')
         if bad_counter >= opt.patience:
             break
     print('-------------------------------------------------------')
