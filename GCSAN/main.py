@@ -37,14 +37,14 @@ print(opt)
 
 def main():
     
-    train_data = pickle.load(open('datasets/'  + '/train.pkl', 'rb'))
+    train_data = pickle.load(open('datasets'  + '/train.pkl', 'rb'))
     if opt.mini:
         train_data = [train_data[0][:200], train_data[1][:200]] # for testing the code
     if opt.validation:
         train_data, valid_data = split_validation(train_data, opt.valid_portion)
         test_data = valid_data
     else:
-        test_data = pickle.load(open('datasets/'  + '/test.pkl', 'rb'))
+        test_data = pickle.load(open('datasets'  + '/test.pkl', 'rb'))
     # all_train_seq = pickle.load(open('../datasets/' + opt.dataset + '/all_train_seq.txt', 'rb'))
     # g = build_graph(all_train_seq)
     train_data = Data(train_data, shuffle=True, opt=opt)
@@ -59,7 +59,10 @@ def main():
     else:
         n_node = 310
 
-    model = trans_to_cuda(SessionGraph(opt, n_node, test_data.len_max))
+    print("test=_data len", test_data.len_max)
+
+    # model = trans_to_cuda(SessionGraph(opt, n_node, test_data.len_max))
+    model = trans_to_cuda(SessionGraph(opt, n_node, 73))
 
     start = time.time()
     best_result = [0, 0]
