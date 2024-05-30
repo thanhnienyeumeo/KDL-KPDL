@@ -3,7 +3,7 @@ import os
 import numpy as np
 from proc_utils import Dataset, split_validation
 from model import *
-
+import argparse
 import pickle
 
 def _load_file(filename):
@@ -15,7 +15,7 @@ test_data = Dataset(test_data_set, shuffle=False)
 
 class yoochoose_data_64():
     dataset = 'yoochoose_data_64'
-    batchSize = 1
+    batchSize = 75
     hiddenSize = 120
     epoch = 100
     lr = 0.001
@@ -24,10 +24,16 @@ class yoochoose_data_64():
     l2 = 1e-5
     step = 1
     patience = 10
-    nonhybrid = True
+    nonhybrid = False
     validation = True
     valid_portion = 0.1
+    saved_data = 'TAGNN++'
+
+    
+parser = argparse.ArgumentParser()
+parser.add_argument('--saved_data', default='TAGNN++')
 opt = yoochoose_data_64()
+opt.saved_data = parser.parse_args().saved_data
 n_node = 22055
 model = to_cuda(Attention_SessionGraph(opt, n_node))
 model = torch.load('TAGNN++/best_mrr.pt')

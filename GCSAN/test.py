@@ -40,6 +40,7 @@ parser.add_argument('--nonhybrid', action='store_true', help='only use the globa
 parser.add_argument('--validation', action='store_true', help='validation')
 parser.add_argument('--valid_portion', type=float, default=0.1, help='split the portion of training set as validation set')
 parser.add_argument('--dynamic', type=bool, default=False)
+parser.add_argument('--saved_data', type = str, default = 'GCSAN')
 opt = parser.parse_args()
 
 
@@ -55,7 +56,7 @@ n_node = 22055
 
 model = trans_to_cuda(SessionGraph(opt, n_node, test_data.len_max))
 
-model = torch.load('GCSAN/best_mrr.pt')
+model = torch.load(opt.saved_data + '/best_mrr.pt')
 
 recall, mrr = validate(model, test_data)
 print('recall@20: ', recall)

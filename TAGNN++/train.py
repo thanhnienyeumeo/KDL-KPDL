@@ -37,7 +37,7 @@ class yoochoose_data_64():
     validation = True
     valid_portion = 0.1
     saved_data = 'TAGNN++'
-    mini = True
+    mini = False
 
 
 # Default args used for Yoochoose1_64
@@ -53,7 +53,7 @@ class Yoochoose_arg():
     l2 = 1e-5
     step = 1
     patience = 10
-    nonhybrid = True
+    nonhybrid = False
     validation = True
     valid_portion = 0.1
 
@@ -158,6 +158,8 @@ if __name__ == '__main__':
     parser.add_argument('--validation', action='store_true', help='validation')
     parser.add_argument('--valid_portion', type=float, default=0.1,
                         help='Portion of train set to split into val set')
+    parser.add_argument('--nonhybrid', type = bool, default = False, help = 'using only global')
+    parser.add_argument('--step', type = int, default = 1, help = 'step of GNN')
     parser.add_argument('--saved_data', type = str, default = 'TAGNN++')
     parser.add_argument('--mini', action = 'store_true', help = 'use the mini dataset')
     opt = parser.parse_args()
