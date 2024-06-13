@@ -1,10 +1,12 @@
 import numpy as np
 import torch
 import datetime
-from utils import build_graph, Data, split_validation
+from SRGNN.utils import build_graph, Data, split_validation
 import pickle
-from model import * 
+from SRGNN.model import * 
 import argparse
+from multiprocessing import Queue
+
 
 def validate(model, test_data):   
     print('start predicting: ', datetime.datetime.now())
@@ -40,22 +42,24 @@ parser.add_argument('--nonhybrid', action='store_true', help='only use the globa
 parser.add_argument('--validation', action='store_true', help='validation')
 parser.add_argument('--valid_portion', type=float, default=0.1, help='split the portion of training set as validation set')
 parser.add_argument('--dynamic', type=bool, default=False)
+parser.add_argument('--saved_data', type = str, default = 'SRGNN')
 opt = parser.parse_args()
 print(opt)
 
 
 
+if __name__ == '__main__':
+    test_data = pickle.load(open('datasets' + '/test.pkl', 'rb'))
+    test_data = Data(test_data, shuffle=False)
+    n_node = 22055
 
-test_data = pickle.load(open('datasets' + '/test.pkl', 'rb'))
-test_data = Data(test_data, shuffle=False)
-n_node = 22055
 
 
+    model = trans_to_cuda(SessionGraph(opt, n_node))
 
-model = trans_to_cuda(SessionGraph(opt, n_node))
+    model = torch.load(opt.saved_data + '/best_mrr.pt')
 
-model = torch.load('SRGNN/best_mrr.pt')
-
-recall, mrr = validate(model, test_data)
-print('recall@20: ', recall)
-print('mrr@20: ', mrr)
+    recall, mrr = validate(model, test_data)
+    print('recall@20: ', recall)
+    print('mrr@20: ', mrr)
+    

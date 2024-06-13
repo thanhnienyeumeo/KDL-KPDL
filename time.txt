@@ -1,0 +1,4 @@
+NARM: 31s / epoch
+TAGNN++: 15p / epoch
+GCSAN: 6p / epoch
+SRGNN: 5p50s / epoch

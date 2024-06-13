@@ -64,6 +64,10 @@ def validate(model, test_data):
     mrr = np.mean(mrr) * 100
     return hit, mrr
 
+def main():
+    hit, mrr = validate(model, test_data)
+    print(f'hit: {hit}, mrr: {mrr}')
+    return hit, mrr
 
-hit, mrr = validate(model, test_data)
-print(f'hit: {hit}, mrr: {mrr}')
+if __name__ == '__main__':
+    main()

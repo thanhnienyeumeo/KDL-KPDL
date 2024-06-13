@@ -5,6 +5,7 @@ from utils import build_graph, Data, split_validation
 import pickle
 from model import * 
 import argparse
+import time
 
 def validate(model, test_data):   
     print('start predicting: ', datetime.datetime.now())
@@ -23,6 +24,7 @@ def validate(model, test_data):
                 mrr.append(1 / (np.where(score == target - 1)[0][0] + 1))
     hit = np.mean(hit) * 100
     mrr = np.mean(mrr) * 100
+    print('end predicting: ', datetime.datetime.now())
     return hit, mrr
 
 parser = argparse.ArgumentParser()
@@ -55,8 +57,8 @@ n_node = 22055
 
 
 model = trans_to_cuda(SessionGraph(opt, n_node, test_data.len_max))
-
-model = torch.load(opt.saved_data + '/best_mrr.pt')
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+model = torch.load(opt.saved_data + '/best_mrr.pt', map_location=device)
 
 recall, mrr = validate(model, test_data)
 print('recall@20: ', recall)

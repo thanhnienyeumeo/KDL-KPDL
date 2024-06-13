@@ -18,7 +18,7 @@ import torch.optim as optim
 from torch.optim.lr_scheduler import StepLR
 from torch.autograd import Variable
 from torch.backends import cudnn
-
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 def load_data(root='/content/drive/MyDrive/yoochoose-data-64', valid_portion=0.1, maxlen=19, sort_by_len=False, train_set=None, test_set=None):
     """Load dataset từ root
     root: folder dữ liệu train, trong trường hợp train_set, test_set tồn tại thì không sử dụng train_set và test_set
@@ -69,7 +69,7 @@ def load_data(root='/content/drive/MyDrive/yoochoose-data-64', valid_portion=0.1
     train_set_x, train_set_y = train_set
     n_samples = len(train_set_x)
     sidx = np.arange(n_samples, dtype='int32')
-    # np.random.shuffle(sidx)
+    np.random.shuffle(sidx)
     n_train = int(np.round(n_samples * (1. - valid_portion)))
     valid_set_x = [train_set_x[s] for s in sidx[n_train:]]
     valid_set_y = [train_set_y[s] for s in sidx[n_train:]]
@@ -363,7 +363,7 @@ def trainForEpoch(train_loader, model, optimizer, epoch, num_epochs, criterion, 
 
         if i % log_aggr == 0:
             print('[TRAIN] epoch %d/%d  observation %d/%d batch loss: %.4f (avg %.4f) (%.2f im/s)'
-                % (epoch + 1, num_epochs, i, len(train_loader), loss_val, sum_epoch_loss / (i + 1),
+                % (epoch , num_epochs, i, len(train_loader), loss_val, sum_epoch_loss / (i + 1),
                   len(seq) / (time.time() - start)))
 
         start = time.time()
@@ -371,7 +371,7 @@ def trainForEpoch(train_loader, model, optimizer, epoch, num_epochs, criterion, 
 
 
 args = {
-    'dataset_path':'/content/drive/MyDrive/KDL&KPDL/yoochoose-data/yoochoose-data-64',
+    'dataset_path':'datasets',
     'batch_size': 75,
     'hidden_size': 120,
     'embed_dim': 50,
@@ -381,13 +381,14 @@ args = {
     'lr_dc_step':3,
     'test':None,
     'topk':20,
-    'valid_portion':0.1
+    'valid_portion':0.1,
+    'saved_data': 'NARM'
 }
 
-here = os.path.dirname(os.getcwd())
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
 
 def main():
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print('Loading data...')
     train_data, valid_data, test_data = load_data(root=args['dataset_path'])
     train_data = RecSysDataset(train_data)
@@ -426,12 +427,12 @@ def main():
             best_result[0] = recall
             best_epoch[0] = epoch
 
-            torch.save(model, f'best_recall.pt')
+            torch.save(model, args['saved_data'] + '/best_recall.pt')
         if mrr >= best_result[1]:
             best_result[1] = mrr
             best_epoch[1] = epoch
 
-            torch.save(model, f'best_mrr.pt')
+            torch.save(model, args['saved_data'] + '/best_mrr.pt')
         # store best loss and save a model checkpoint
         ckpt_dict = {
             'epoch': epoch + 1,
@@ -443,7 +444,9 @@ def main():
         }
         # Save model checkpoint into 'latest_checkpoint.pth.tar'
         torch.save(ckpt_dict, args['dataset_path'] +  f'checkpoint.pth.tar')
-    return model
+   
 
 
-
+if __name__ == '__main__':
+    main()
+    print('Training is done!')
